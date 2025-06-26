@@ -1,6 +1,34 @@
-# Overview
+# Storyboard
 
-This is a simple demo project to highlight the analysis of Python on SonarCloud.
+The goal of this demo is to show the analysis of a Python application in SonarCloud.
+We want to showcase how to apply the "Clean As You Code" methodology in practice.
+
+We start with a Flask application that represents a legacy project which we want to analyze.
+This Flask application contains a "main" branch with the existing code. 
+It also contains an "add-feature" branch that represents a new feature we want to develop for the application.
+
+The full set-up can either be done as part of the demo (takes about 15 minutes), or beforehand.
+A branch "enable-ci-analysis" is available to move from Automatic Analysis to a CI-based analysis, with import of code coverage information.
+
+When fully set-up, the concept of PR Quality Gate on new code can be shown as well as its independence from the main code issues.
+The application features basic, yet varied, issue types that can be detected by SonarCloud. In the PR, we have:
+* A simple bug with no secondary location (raising a non-exception object)
+* A bug with a secondary location on another file (calling a function with the wrong number of arguments)
+* A classic taint analysis vulnerability (SQL injection)
+* A reflected XSS (also taint analysis)
+* A "bad practice" code smell (a bare except clause)
+* A code smell that is actually a bug (inconsistency between type hint and usages) - SonarCloud tends to be conservative when raising issues
+* A stylistic code smell (nested if statements that could be simplified) - good candidate to illustrate custom quality profiles (disabling the rule)
+
+Additionally, we have security hotspots on the main branch:
+* A disabled by default CSRF protection on the flask application
+* A slow regular expression, vulnerable to catastrophic backtracking
+
+When setting up CI-based analysis, import of code coverage will be done by default (in the enable-ci-analysis branch).
+Flake8 is also running in the CI by default, its issues can be imported as well (we also support common linters like pylint, bandit or mypy).
+
+If you want to demo SonarLint, you can also clone this project to show the issues in SonarLint. The injection vulnerabilities will not be displayed there. Some of the issues have quick fixes for them.
+Connected mode can also be shown by simply following the tutorial in the IDE, which allow to synchronize silenced issues/custom quality profiles/etc...
 
 ## Running the webapp
 
@@ -11,7 +39,8 @@ Python 3 and flask need to be installed in the environment. You can run the foll
 - Initialize the database with `python init_db.py` (optional: a `database.db` file is already committed in the repository)
 - `cd pokedex` and then simply run the webapp with `flask run`
 
-# Sonar Workshop
+Running the web application is entirely optional for the demo, it can be used to make the application more visual and to show some of the bugs/vulnerabilities in practice.
+# Setup instructions
 
 We're going to set up a SonarCloud analysis on this project. We'll visualise issues on the main branch and on pull requests and see how PRs get decorated automatically.
 
@@ -21,7 +50,7 @@ Useful link: https://docs.sonarcloud.io/
 
 ## Getting started
 
-- Fork this repository.
+- Fork this repository, with all existing branches (by default, only the main branch is forked).
 - A basic workflow which will act as our CI already exists in `.github/workflows/python-app.yml`. It is disabled by default. Go to `Actions` and enable GitHub Actions to activate it.
 - Go to `Pull requests->New pull request` and open a pull request from the `add-feature` branch to the `main` branch of your fork. Be careful that, by default, the PR targets the upstream repository.
 - The GitHub Action should run and succeed.
@@ -48,6 +77,8 @@ You'll need to generate code coverage information and run the analysis in your C
 * Define a `SONAR_TOKEN` secret in your GitHub repository with a token created in SonarCloud (see [here](#enable-ci-based-analysis)).
 * Replace the placeholders in the `sonar-project.properties` file with your project information.
 * Merge the `enable-ci-analysis` in your main branch, then rebase the feature branch.
+
+If you're using the `enable-ci-analysis` branch, you can skip the rest of this section.
 
 ### Generate coverage information
 To generate coverage information, the `.github/workflow/python-app.yml` file should be updated. We'll also need to make sure file paths are set to be relative to avoid any issue when importing the report.
